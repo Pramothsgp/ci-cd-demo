@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: microservices-config
+  labels:
+    app: microservices-demo
+data:
+  # Service URLs for inter-service communication
+  USER_SERVICE_URL: "http://user-service:8001"
+  ORDER_SERVICE_URL: "http://order-service:8002"
+  
+  # Application settings
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "development"

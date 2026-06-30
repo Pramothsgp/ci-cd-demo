@@ -1,0 +1,85 @@
+name: CD Pipeline - Update K8s Manifests
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}
+
+jobs:
+  update-manifests:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Get commit SHA
+        id: vars
+        run: |
+          echo "sha_short=$(echo ${{ github.event.workflow_run.head_sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Update image tags in Kustomize
+        run: |
+          # Update dev overlay
+          cd k8s/overlays/dev
+          
+          # Update API Gateway image tag
+          sed -i "s|newTag: .*|newTag: ${{ steps.vars.outputs.sha_short }}|g" kustomization.yaml
+          
+          # If using kustomize edit (requires kustomize installed)
+          # kustomize edit set image ghcr.io/${{ env.IMAGE_PREFIX }}/api-gateway:${{ steps.vars.outputs.sha_short }}
+          
+          cd ../..
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add k8s/
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update image tags to ${{ steps.vars.outputs.sha_short }} [skip ci]"
+            git push
+          fi
+
+      - name: Trigger Argo CD Sync (optional)
+        if: false  # Enable when Argo CD webhook is configured
+        run: |
+          # Option 1: Use Argo CD CLI
+          # argocd app sync microservices-demo --auth-token ${{ secrets.ARGOCD_TOKEN }}
+          
+          # Option 2: Use webhook
+          # curl -X POST ${{ secrets.ARGOCD_WEBHOOK_URL }}
+          
+          echo "Argo CD will auto-sync based on Git changes"
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: update-manifests
+    if: always()
+    steps:
+      - name: Deployment notification
+        run: |
+          echo "## CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ needs.update-manifests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: CI Pipeline completed on main branch" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.event.workflow_run.head_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Argo CD will automatically sync the new manifests." >> $GITHUB_STEP_SUMMARY

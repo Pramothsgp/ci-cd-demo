@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices-demo
+  labels:
+    name: microservices-demo
+    istio-injection: disabled  # Enable if using Istio

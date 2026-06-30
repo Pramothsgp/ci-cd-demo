@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  source:
+    # Replace with your GitHub repository URL
+    repoURL: https://github.com/YOUR_GITHUB_USERNAME/ci-cd-demo.git
+    targetRevision: main
+    path: k8s/overlays/dev
+    
+    # Optional: Use Kustomize
+    kustomize:
+      # Override images if needed
+      # images:
+      #   - ghcr.io/YOUR_GITHUB_USERNAME/api-gateway:latest
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: microservices-demo
+
+  syncPolicy:
+    automated:
+      prune: true        # Remove resources not in Git
+      selfHeal: true     # Auto-sync when cluster state differs
+      allowEmpty: false  # Don't sync if source is empty
+    
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Health checks
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas  # Ignore replica count differences (for HPA)
+
+  info:
+    - name: Documentation
+      value: https://github.com/YOUR_GITHUB_USERNAME/ci-cd-demo
+    - name: Environment
+      value: Development

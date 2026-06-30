@@ -1,0 +1,71 @@
+version: "3.8"
+
+# Development docker-compose with hot-reload and debugging capabilities
+
+services:
+  # API Gateway - Entry point for all requests
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+      target: builder # Use builder stage for dev
+    container_name: api-gateway-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - USER_SERVICE_URL=http://user-service:8001
+      - ORDER_SERVICE_URL=http://order-service:8002
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/api-gateway/app:/app/app:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - user-service
+      - order-service
+    networks:
+      - microservices-network-dev
+    restart: unless-stopped
+
+  # User Service - User management
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: user-service-dev
+    ports:
+      - "8001:8001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/user-service/app:/app/app:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+    networks:
+      - microservices-network-dev
+    restart: unless-stopped
+
+  # Order Service - Order management
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+      target: builder
+    container_name: order-service-dev
+    ports:
+      - "8002:8002"
+    environment:
+      - USER_SERVICE_URL=http://user-service:8001
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/order-service/app:/app/app:ro
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
+    depends_on:
+      - user-service
+    networks:
+      - microservices-network-dev
+    restart: unless-stopped
+
+networks:
+  microservices-network-dev:
+    driver: bridge
+    name: microservices-network-dev
