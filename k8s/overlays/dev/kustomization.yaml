@@ -56,7 +56,16 @@ configMapGenerator:
       - LOG_LEVEL=DEBUG
 
 labels:
-  environment: dev
+  - pairs:
+      environment: dev
+
+images:
+  - name: pramothsgp/api-gateway
+    newTag: latest
+  - name: pramothsgp/user-service
+    newTag: latest
+  - name: pramothsgp/order-service
+    newTag: latest
 
 # ============================================================================
 # Image configuration - Updated by GitHub Actions CI/CD pipeline

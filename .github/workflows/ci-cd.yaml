@@ -164,23 +164,14 @@ jobs:
 
       - name: Update kustomization with new image tags
         run: |
-          cd k8s/overlays/dev
-          
-          # Get short SHA
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          
-          # Update images in kustomization.yaml using kustomize edit
-          # First, install kustomize
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-          sudo mv kustomize /usr/local/bin/
-          
-          # Set new image tags
-          kustomize edit set image \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/api-gateway:${{ github.sha }} \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/user-service:${{ github.sha }} \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/order-service:${{ github.sha }}
-          
-          cat kustomization.yaml
+          # Update newTag for each service using sed (avoids kustomize dependency
+          # and the masked-secret problem with kustomize edit set image)
+          sed -i "s|name: pramothsgp/api-gateway|name: pramothsgp/api-gateway|" k8s/overlays/dev/kustomization.yaml
+          sed -i "/name: pramothsgp\/api-gateway/{n;s|newTag:.*|newTag: ${{ github.sha }}|}" k8s/overlays/dev/kustomization.yaml
+          sed -i "/name: pramothsgp\/user-service/{n;s|newTag:.*|newTag: ${{ github.sha }}|}" k8s/overlays/dev/kustomization.yaml
+          sed -i "/name: pramothsgp\/order-service/{n;s|newTag:.*|newTag: ${{ github.sha }}|}" k8s/overlays/dev/kustomization.yaml
+
+          cat k8s/overlays/dev/kustomization.yaml
 
       - name: Commit and push changes
         run: |
