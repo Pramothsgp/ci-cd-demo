@@ -54,7 +54,7 @@ Thumbs.db
 *.key
 .env
 .env.*
-secrets.yaml
+# secrets.yaml - tracked for demo
 *-secrets.yaml
 
 # Temporary files

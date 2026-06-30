@@ -1,6 +1,30 @@
 # CI/CD Demo with Docker, Kubernetes, GitHub Actions, and Argo CD
 
-A comprehensive demonstration of a microservices architecture with a complete CI/CD pipeline using modern DevOps practices.
+A comprehensive demonstration of a microservices architecture with a complete CI/CD pipeline using modern DevOps practices. **Push code → Auto-build → Auto-deploy** to your local Kubernetes cluster!
+
+## 🚀 Pipeline Overview
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Git Push   │────▶│GitHub Actions│────▶│  Docker Hub  │────▶│    ArgoCD    │
+│   (main)     │     │  (Build/Test)│     │  (Registry)  │     │   (GitOps)   │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────┬───────┘
+                                                                       │
+                                                                       ▼
+                                                              ┌──────────────┐
+                                                              │  Kubernetes  │
+                                                              │   (Local)    │
+                                                              └──────────────┘
+```
+
+**What happens when you push code:**
+1. **GitHub Actions** detects the push to `main` branch
+2. **Runs tests** for all microservices
+3. **Builds Docker images** with git SHA tags
+4. **Pushes to Docker Hub** (public registry)
+5. **Updates K8s manifests** with new image tags
+6. **ArgoCD detects changes** and syncs to your local cluster
+7. **Kubernetes** pulls new images and restarts pods
 
 ## 🏗️ Architecture
 
@@ -38,11 +62,14 @@ A comprehensive demonstration of a microservices architecture with a complete CI
 | **Load Balancing** | NGINX Ingress Controller |
 | **Monitoring** | Prometheus + Grafana |
 | **Config Management** | Kustomize |
+| **Tunnel** | Ngrok (connect GitHub to local) |
 
 ## 📁 Project Structure
 
 ```
 ci-cd/
+├── .github/workflows/           # GitHub Actions CI/CD
+│   └── ci-cd.yaml               # Main pipeline
 ├── services/                    # Microservices
 │   ├── api-gateway/             # Entry point service
 │   ├── user-service/            # User management
@@ -322,6 +349,204 @@ This is a **demo project**. For production:
 - [Argo CD Documentation](https://argo-cd.readthedocs.io/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/)
+
+---
+
+## 🎯 Complete CI/CD Demo with Ngrok
+
+This section explains how to demo the **full CI/CD pipeline** with code changes automatically deploying to your local Kubernetes cluster.
+
+### Prerequisites
+
+1. **Docker Hub Account** - [Sign up](https://hub.docker.com/signup)
+2. **GitHub Account** - [Sign up](https://github.com/signup)
+3. **Ngrok Account** - [Sign up (free)](https://dashboard.ngrok.com/signup)
+
+### Step 1: Complete Local Setup
+
+```bash
+# Run the complete setup script
+chmod +x scripts/setup-complete-demo.sh
+./scripts/setup-complete-demo.sh full
+```
+
+This will:
+- ✅ Start Minikube
+- ✅ Install ArgoCD
+- ✅ Install ArgoCD Image Updater
+- ✅ Build and push Docker images
+- ✅ Deploy all services
+- ✅ Configure ArgoCD application
+
+### Step 2: Configure GitHub Repository
+
+1. **Create a new GitHub repository** or use existing
+
+2. **Add Repository Secrets** (Settings → Secrets and variables → Actions → Secrets):
+   
+   | Secret Name | Value |
+   |-------------|-------|
+   | `DOCKER_HUB_USERNAME` | Your Docker Hub username |
+   | `DOCKER_HUB_TOKEN` | Your Docker Hub access token |
+   | `ARGOCD_AUTH_TOKEN` | Token from ngrok setup (optional) |
+
+3. **Create Docker Hub Access Token:**
+   - Go to [Docker Hub Security Settings](https://hub.docker.com/settings/security)
+   - Click "New Access Token"
+   - Copy the token and add it as `DOCKER_HUB_TOKEN` secret
+
+### Step 3: Start Ngrok Tunnel
+
+```bash
+# Start ngrok tunnel (keep this terminal open!)
+./scripts/setup-ngrok.sh start
+```
+
+This will display:
+- 🌐 **Ngrok public URL** for ArgoCD
+- 🔐 **ArgoCD credentials**
+- 🔑 **ArgoCD API token** for GitHub Actions
+
+**Add the ngrok URL to GitHub:**
+- Settings → Secrets and variables → Actions → **Variables**
+- Name: `ARGOCD_SERVER_URL`
+- Value: `https://xxxx-xx-xxx-xxx-xxx.ngrok-free.app`
+
+### Step 4: Push Code to GitHub
+
+```bash
+# Initialize git and push
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git push -u origin main
+```
+
+### Step 5: Demo the Pipeline! 🎉
+
+**Make a code change:**
+```bash
+# Edit any service (e.g., add a new endpoint)
+echo "" >> services/api-gateway/app/main.py
+echo "# Demo change - $(date)" >> services/api-gateway/app/main.py
+```
+
+**Commit and push:**
+```bash
+git add .
+git commit -m "🚀 Demo: trigger CI/CD pipeline"
+git push
+```
+
+**Watch the magic happen:**
+
+| What to Watch | Where |
+|---------------|-------|
+| **GitHub Actions** | `https://github.com/YOUR_USER/YOUR_REPO/actions` |
+| **ArgoCD Dashboard** | `http://localhost:8080` or ngrok URL |
+| **Kubernetes Pods** | `kubectl get pods -n microservices-demo -w` |
+
+### Pipeline Flow Visualization
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           YOU PUSH CODE TO MAIN                              │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  GITHUB ACTIONS                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐ │
+│  │ Detect       │→ │ Run Tests    │→ │ Build Images │→ │ Push to Docker   │ │
+│  │ Changes      │  │ (pytest)     │  │ (3 services) │  │ Hub              │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └────────┬─────────┘ │
+└────────────────────────────────────────────────────────────────────────────┘
+                                                                   │
+                                                                   ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  GITHUB ACTIONS - UPDATE MANIFESTS                                           │
+│  ┌───────────────────────────────────────────────────────────────────────┐  │
+│  │  kustomize edit set image pramothsgp/api-gateway:abc123               │  │
+│  │  git commit -m "Update image tags" && git push                        │  │
+│  └───────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────┬───────────────────────────────────┘
+                                          │
+                                          ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ARGOCD (via ngrok tunnel)                                                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────────────┐  │
+│  │ Detect Git   │→ │ Compare      │→ │ Sync to Kubernetes               │  │
+│  │ Changes      │  │ Desired vs   │  │ (Pull new images, restart pods)  │  │
+│  │              │  │ Actual State │  │                                  │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                          │
+                                          ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  YOUR LOCAL KUBERNETES (Minikube)                                            │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │  microservices-demo namespace                                          │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                    │ │
+│  │  │ api-gateway │  │user-service │  │order-service│  ← NEW IMAGES!     │ │
+│  │  │   :abc123   │  │   :abc123   │  │   :abc123   │                    │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                    │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Useful Demo Commands
+
+```bash
+# Watch pods updating in real-time
+kubectl get pods -n microservices-demo -w
+
+# Check current images
+kubectl get pods -n microservices-demo -o jsonpath='{range .items[*]}{.spec.containers[*].image}{"\n"}{end}'
+
+# View ArgoCD app status
+kubectl get application -n argocd
+
+# Port-forward to test the API
+kubectl port-forward svc/api-gateway -n microservices-demo 8000:8000
+curl http://localhost:8000/health
+
+# Check GitHub Actions logs
+# Visit: https://github.com/YOUR_USER/YOUR_REPO/actions
+
+# View ngrok traffic (useful for debugging)
+# Visit: http://localhost:4040
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| GitHub Actions fails | Check secrets are set correctly |
+| Docker push fails | Verify `DOCKER_HUB_TOKEN` has write access |
+| ArgoCD not syncing | Check ngrok tunnel is running |
+| Pods not updating | Run `kubectl rollout restart deployment -n microservices-demo` |
+| Ngrok URL changed | Update `ARGOCD_SERVER_URL` variable in GitHub |
+
+### Cleanup
+
+```bash
+# Stop ngrok and port-forwards
+./scripts/setup-ngrok.sh stop
+
+# Delete all resources
+kubectl delete -k k8s/overlays/dev
+kubectl delete -f argocd/applications/
+
+# Stop minikube
+minikube stop
+
+# Or delete everything
+minikube delete
+```
+
+---
 
 ## 📄 License
 

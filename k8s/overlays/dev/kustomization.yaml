@@ -55,13 +55,18 @@ configMapGenerator:
       - ENVIRONMENT=development
       - LOG_LEVEL=DEBUG
 
-commonLabels:
+labels:
   environment: dev
 
+# ============================================================================
+# Image configuration - Updated by GitHub Actions CI/CD pipeline
+# The newTag will be updated automatically when you push to main branch
+# Format: kustomize edit set image pramothsgp/api-gateway:NEW_SHA
+# ============================================================================
 images:
-  - name: ghcr.io/YOUR_GITHUB_USERNAME/api-gateway
-    newTag: dev
-  - name: ghcr.io/YOUR_GITHUB_USERNAME/user-service
-    newTag: dev
-  - name: ghcr.io/YOUR_GITHUB_USERNAME/order-service
-    newTag: dev
+  - name: pramothsgp/api-gateway
+    newTag: latest
+  - name: pramothsgp/user-service
+    newTag: latest
+  - name: pramothsgp/order-service
+    newTag: latest

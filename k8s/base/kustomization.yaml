@@ -12,6 +12,6 @@ resources:
   - order-service/
   - ingress.yaml
 
-commonLabels:
+labels:
   app.kubernetes.io/managed-by: kustomize
   app.kubernetes.io/part-of: microservices-demo

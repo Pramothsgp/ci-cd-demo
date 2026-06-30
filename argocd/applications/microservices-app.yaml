@@ -5,6 +5,18 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # ArgoCD Image Updater annotations - auto-detect new Docker Hub images
+    argocd-image-updater.argoproj.io/image-list: |
+      api-gateway=pramothsgp/api-gateway:~
+      user-service=pramothsgp/user-service:~
+      order-service=pramothsgp/order-service:~
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+    # Update strategy: use latest semver or commit SHA
+    argocd-image-updater.argoproj.io/api-gateway.update-strategy: latest
+    argocd-image-updater.argoproj.io/user-service.update-strategy: latest
+    argocd-image-updater.argoproj.io/order-service.update-strategy: latest
 spec:
   project: default
   
@@ -14,11 +26,10 @@ spec:
     targetRevision: main
     path: k8s/overlays/dev
     
-    # Optional: Use Kustomize
+    # Use Kustomize for environment-specific configurations
     kustomize:
-      # Override images if needed
-      # images:
-      #   - ghcr.io/YOUR_GITHUB_USERNAME/api-gateway:latest
+      # Images will be updated by kustomize edit set image in CI/CD pipeline
+      images: []
 
   destination:
     server: https://kubernetes.default.svc
