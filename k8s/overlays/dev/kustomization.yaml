@@ -61,11 +61,11 @@ labels:
 
 images:
   - name: pramothsgp/api-gateway
-    newTag: latest
+    newTag: aee7298b2d0077917fdcefc7e8babeb81f645b81
   - name: pramothsgp/user-service
-    newTag: latest
+    newTag: aee7298b2d0077917fdcefc7e8babeb81f645b81
   - name: pramothsgp/order-service
-    newTag: latest
+    newTag: aee7298b2d0077917fdcefc7e8babeb81f645b81
 
 # ============================================================================
 # Image configuration - Updated by GitHub Actions CI/CD pipeline
@@ -74,8 +74,8 @@ images:
 # ============================================================================
 images:
   - name: pramothsgp/api-gateway
-    newTag: latest
+    newTag: aee7298b2d0077917fdcefc7e8babeb81f645b81
   - name: pramothsgp/user-service
-    newTag: latest
+    newTag: aee7298b2d0077917fdcefc7e8babeb81f645b81
   - name: pramothsgp/order-service
-    newTag: latest
+    newTag: aee7298b2d0077917fdcefc7e8babeb81f645b81
