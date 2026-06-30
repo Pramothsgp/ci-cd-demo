@@ -166,12 +166,12 @@ jobs:
 
       - name: Update kustomization with new image tags
         run: |
-          # Update newTag for each service using sed (avoids kustomize dependency
-          # and the masked-secret problem with kustomize edit set image)
-          sed -i "s|name: pramothsgp/api-gateway|name: pramothsgp/api-gateway|" k8s/overlays/dev/kustomization.yaml
-          sed -i "/name: pramothsgp\/api-gateway/{n;s|newTag:.*|newTag: ${{ github.sha }}|}" k8s/overlays/dev/kustomization.yaml
-          sed -i "/name: pramothsgp\/user-service/{n;s|newTag:.*|newTag: ${{ github.sha }}|}" k8s/overlays/dev/kustomization.yaml
-          sed -i "/name: pramothsgp\/order-service/{n;s|newTag:.*|newTag: ${{ github.sha }}|}" k8s/overlays/dev/kustomization.yaml
+          # Use short SHA (7 chars) to match what docker/metadata-action type=sha,prefix= generates
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+
+          sed -i "/name: pramothsgp\/api-gateway/{n;s|newTag:.*|newTag: ${SHORT_SHA}|}" k8s/overlays/dev/kustomization.yaml
+          sed -i "/name: pramothsgp\/user-service/{n;s|newTag:.*|newTag: ${SHORT_SHA}|}" k8s/overlays/dev/kustomization.yaml
+          sed -i "/name: pramothsgp\/order-service/{n;s|newTag:.*|newTag: ${SHORT_SHA}|}" k8s/overlays/dev/kustomization.yaml
 
           cat k8s/overlays/dev/kustomization.yaml
 

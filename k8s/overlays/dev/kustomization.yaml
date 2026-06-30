@@ -61,21 +61,8 @@ labels:
 
 images:
   - name: pramothsgp/api-gateway
-    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
+    newTag: latest
   - name: pramothsgp/user-service
-    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
+    newTag: latest
   - name: pramothsgp/order-service
-    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
-
-# ============================================================================
-# Image configuration - Updated by GitHub Actions CI/CD pipeline
-# The newTag will be updated automatically when you push to main branch
-# Format: kustomize edit set image pramothsgp/api-gateway:NEW_SHA
-# ============================================================================
-images:
-  - name: pramothsgp/api-gateway
-    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
-  - name: pramothsgp/user-service
-    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
-  - name: pramothsgp/order-service
-    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
+    newTag: latest
