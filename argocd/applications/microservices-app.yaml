@@ -21,8 +21,7 @@ spec:
   project: default
   
   source:
-    # Replace with your GitHub repository URL
-    repoURL: https://github.com/YOUR_GITHUB_USERNAME/ci-cd-demo.git
+    repoURL: https://github.com/Pramothsgp/ci-cd-demo.git
     targetRevision: main
     path: k8s/overlays/dev
     

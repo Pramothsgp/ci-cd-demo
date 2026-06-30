@@ -10,7 +10,7 @@ spec:
   
   # Source repositories
   sourceRepos:
-    - 'https://github.com/YOUR_GITHUB_USERNAME/*'
+    - 'https://github.com/Pramothsgp/*'
     - 'https://github.com/argoproj/argo-cd.git'  # For Argo CD resources
   
   # Destination clusters and namespaces

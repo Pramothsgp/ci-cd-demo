@@ -58,7 +58,8 @@ create_namespace() {
 install_argocd() {
     print_status "Installing Argo CD..."
     
-    kubectl apply -n $ARGOCD_NAMESPACE \
+    # Use --server-side to avoid the 262144-byte annotation limit on large CRDs
+    kubectl apply -n $ARGOCD_NAMESPACE --server-side \
         -f https://raw.githubusercontent.com/argoproj/argo-cd/$ARGOCD_VERSION/manifests/install.yaml
     
     print_status "Argo CD manifests applied ✓"

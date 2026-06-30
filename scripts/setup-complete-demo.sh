@@ -115,9 +115,9 @@ install_argocd() {
     # Create namespace
     kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
     
-    # Install ArgoCD
+    # Install ArgoCD (use --server-side to avoid annotation size limit on large CRDs)
     print_info "Applying ArgoCD manifests..."
-    kubectl apply -n argocd \
+    kubectl apply -n argocd --server-side \
         -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     
     # Wait for ArgoCD to be ready

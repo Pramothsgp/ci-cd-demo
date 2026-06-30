@@ -26,6 +26,10 @@ print_header() { echo -e "\n${CYAN}$1${NC}"; }
 NGROK_CONFIG_DIR="$HOME/.ngrok2"
 ARGOCD_PORT=8080
 API_GATEWAY_PORT=8000
+# Optional: set NGROK_STATIC_DOMAIN to your free static domain to avoid
+# updating GitHub secrets every restart, e.g.:
+#   export NGROK_STATIC_DOMAIN=your-name-xyz.ngrok-free.app
+# Get a free static domain at: https://dashboard.ngrok.com/domains
 
 print_header "=============================================="
 print_header "   🌐 Ngrok Setup for CI/CD Demo"
@@ -78,16 +82,23 @@ check_ngrok_auth() {
 # Port forward ArgoCD
 setup_argocd_port_forward() {
     print_status "Setting up port forward for ArgoCD..."
-    
+
+    # Wait for argocd-server deployment to be available
+    if ! kubectl wait --for=condition=available --timeout=180s \
+            deployment/argocd-server -n argocd 2>/dev/null; then
+        print_error "ArgoCD server is not ready. Run setup-argocd.sh first."
+        return 1
+    fi
+
     # Kill existing port forwards
     pkill -f "kubectl port-forward.*argocd-server" 2>/dev/null || true
-    
+
     # Start port forward in background
     kubectl port-forward svc/argocd-server -n argocd $ARGOCD_PORT:443 &>/dev/null &
     ARGOCD_PF_PID=$!
-    
+
     sleep 2
-    
+
     if kill -0 $ARGOCD_PF_PID 2>/dev/null; then
         print_status "ArgoCD port forward running on localhost:$ARGOCD_PORT ✓"
         echo $ARGOCD_PF_PID > /tmp/argocd-pf.pid
@@ -121,19 +132,29 @@ setup_api_gateway_port_forward() {
 # Start ngrok tunnels
 start_ngrok_tunnels() {
     print_status "Starting ngrok tunnel for ArgoCD..."
-    
-    # Kill existing ngrok processes
-    pkill -f "ngrok" 2>/dev/null || true
+
+    # Kill existing ngrok processes (pattern must NOT match this script's own name)
+    pkill -f "ngrok http" 2>/dev/null || true
+    pkill -f "ngrok start" 2>/dev/null || true
     sleep 1
-    
-    # Start ngrok for ArgoCD
-    ngrok http $ARGOCD_PORT --log=stdout > /tmp/ngrok-argocd.log 2>&1 &
+
+    # Use a named tunnel from ~/.config/ngrok/ngrok.yml if it exists (gives a static domain),
+    # otherwise fall back to an ad-hoc tunnel on ARGOCD_PORT.
+    if grep -q "tunnels:" "$HOME/.config/ngrok/ngrok.yml" 2>/dev/null; then
+        print_status "Using static domain from ngrok config..."
+        ngrok start argocd --log=stdout > /tmp/ngrok-argocd.log 2>&1 &
+    elif [ -n "$NGROK_STATIC_DOMAIN" ]; then
+        print_status "Using static domain: $NGROK_STATIC_DOMAIN"
+        ngrok http $ARGOCD_PORT --domain="$NGROK_STATIC_DOMAIN" --log=stdout > /tmp/ngrok-argocd.log 2>&1 &
+    else
+        ngrok http $ARGOCD_PORT --log=stdout > /tmp/ngrok-argocd.log 2>&1 &
+    fi
     NGROK_PID=$!
     echo $NGROK_PID > /tmp/ngrok-argocd.pid
-    
+
     # Wait for ngrok to start
     sleep 3
-    
+
     # Get the public URL
     NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"https://[^"]*' | head -1 | cut -d'"' -f4)
     
@@ -237,7 +258,7 @@ cleanup() {
     # Kill ngrok
     [ -f /tmp/ngrok-argocd.pid ] && kill $(cat /tmp/ngrok-argocd.pid) 2>/dev/null && rm /tmp/ngrok-argocd.pid
     
-    pkill -f "ngrok" 2>/dev/null || true
+    pkill -f "ngrok http" 2>/dev/null || true
     pkill -f "kubectl port-forward.*argocd-server" 2>/dev/null || true
     
     print_status "Cleanup complete ✓"
@@ -249,7 +270,7 @@ main() {
         start)
             check_ngrok
             check_ngrok_auth
-            setup_argocd_port_forward
+            setup_argocd_port_forward || { print_error "Cannot proceed without ArgoCD port forward."; exit 1; }
             setup_api_gateway_port_forward
             start_ngrok_tunnels
             get_argocd_credentials
