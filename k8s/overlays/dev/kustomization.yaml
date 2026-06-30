@@ -61,11 +61,11 @@ labels:
 
 images:
   - name: pramothsgp/api-gateway
-    newTag: 34f2552901dbe57a39ad704d9c2e183f7fd394b2
+    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
   - name: pramothsgp/user-service
-    newTag: 34f2552901dbe57a39ad704d9c2e183f7fd394b2
+    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
   - name: pramothsgp/order-service
-    newTag: 34f2552901dbe57a39ad704d9c2e183f7fd394b2
+    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
 
 # ============================================================================
 # Image configuration - Updated by GitHub Actions CI/CD pipeline
@@ -74,8 +74,8 @@ images:
 # ============================================================================
 images:
   - name: pramothsgp/api-gateway
-    newTag: 34f2552901dbe57a39ad704d9c2e183f7fd394b2
+    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
   - name: pramothsgp/user-service
-    newTag: 34f2552901dbe57a39ad704d9c2e183f7fd394b2
+    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
   - name: pramothsgp/order-service
-    newTag: 34f2552901dbe57a39ad704d9c2e183f7fd394b2
+    newTag: 45752f5a5d8d65da789621a9a0d5c781aa0490e8
