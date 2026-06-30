@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: order-service
-          image: ghcr.io/pramothsgp/order-service:latest
+          image: pramothsgp/order-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8002

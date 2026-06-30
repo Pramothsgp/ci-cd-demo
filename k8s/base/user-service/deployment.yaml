@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: ghcr.io/pramothsgp/user-service:latest
+          image: pramothsgp/user-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8001

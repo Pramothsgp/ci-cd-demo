@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: ghcr.io/pramothsgp/api-gateway:latest
+          image: pramothsgp/api-gateway:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
