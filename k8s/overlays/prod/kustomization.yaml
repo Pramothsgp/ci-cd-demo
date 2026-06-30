@@ -71,7 +71,8 @@ configMapGenerator:
       - LOG_LEVEL=INFO
 
 labels:
-  environment: prod
+  - pairs:
+      environment: prod
 
 images:
   - name: ghcr.io/YOUR_GITHUB_USERNAME/api-gateway
