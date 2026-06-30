@@ -183,10 +183,12 @@ jobs:
           git add k8s/overlays/dev/kustomization.yaml
           
           # Only commit if there are changes
+          # [skip ci] prevents this commit from re-triggering the workflow
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "🚀 Update image tags to ${{ github.sha }}"
+            git commit -m "🚀 Update image tags to ${SHORT_SHA} [skip ci]"
             git push
           fi
 
