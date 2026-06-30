@@ -38,7 +38,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="API Gateway",
     description="Entry point for the microservices demo",
-    version="1.0.0",
+    version="1.0.1",
     lifespan=lifespan
 )
 
