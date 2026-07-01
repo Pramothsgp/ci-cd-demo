@@ -61,8 +61,8 @@ labels:
 
 images:
   - name: pramothsgp/api-gateway
-    newTag: 323eca8
+    newTag: 20ad764
   - name: pramothsgp/user-service
-    newTag: 323eca8
+    newTag: 20ad764
   - name: pramothsgp/order-service
-    newTag: 323eca8
+    newTag: 20ad764
