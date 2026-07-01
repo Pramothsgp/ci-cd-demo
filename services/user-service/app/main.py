@@ -24,7 +24,7 @@ def init_sample_data():
     """Initialize with sample data for demonstration."""
     global user_id_counter
     sample_users = [
-        {"name": "Alice Johnson", "email": "alice@example.com", "role": UserRole.ADMIN},
+        {"name": "Pramoth", "email": "alice@example.com", "role": UserRole.ADMIN},
         {"name": "Bob Smith", "email": "bob@example.com", "role": UserRole.USER},
         {"name": "Charlie Brown", "email": "charlie@example.com", "role": UserRole.USER},
     ]
